@@ -3,5 +3,6 @@
 
 extern void en_q(int data);
 extern int de_q(void);
+extern void print_q_stat(void);
 
 #endif

@@ -1,24 +1,17 @@
 #ifndef __MISC_H__
 #define __MISC_H__
-
 #include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
 
+extern void DIE_check_func(char * f, int line, int cond, const char *fmt, ...);
 
-#define DIE_IF(cond, fmt, ...) DIE_assert_func(__FILE__, __LINE__, !!(cond), fmt, ##__VA_ARGS__)
+#define DIE_IF(cond, fmt, ...) DIE_check_func(__FILE__, __LINE__, !!(cond), fmt, ##__VA_ARGS__)
 
-void DIE_assert_func(char * f, int line, int cond, const char *fmt, ...) {
-        va_list args;
+#define DEF_STAT_VAR(var) static volatile sig_atomic_t stat_##var = 0
+#define STAT(var) stat_##var++
+#define PRINT_STAT(var) printf("\tstat_" #var ":\t\t%d\n", stat_##var)
 
-        va_start(args, fmt);
-        if(!cond) {
-                printf("DIE at %s:%i: ", f, line);
-                vprintf(fmt, args);
-                printf("\n");
-                abort();
-        }
-        va_end(args);
-}
+#define DEF_STAT_MAX(var) static volatile sig_atomic_t stat_max_##var = 0
+#define STAT_MAX(var, v) if(v > stat_max_##var) stat_max_##var=v
+#define PRINT_STAT_MAX(var) printf("\tstat_max_" #var ":\t\t%d\n", stat_max_##var)
 
 #endif

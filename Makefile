@@ -1,8 +1,9 @@
-cs-test: cs_test.o task.o misc.o
+cs: cs_test.o task.o misc.o queue.o
+	$(CC) $^ -lpthread -o $@
 
-cs_test.o: cs_test.c
-task.o: task.c
-misc.o: task.c
+cs_test.o: cs_test.c misc.h task.h queue.h
+task.o: task.c task.h misc.h
+misc.o: misc.c misc.h
 
 %.o: %.c
 	$(CC) -c -Wall $< -o $@
@@ -10,4 +11,4 @@ misc.o: task.c
 .PHONY: clean
 
 clean:
-	rm -f *.o cs-test
+	rm -f *.o cs

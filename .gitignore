@@ -1,0 +1,4 @@
+*.o
+cs
+perf.data
+perf.data.old
