@@ -7,16 +7,23 @@
 #include "task.h"
 #include "queue.h"
 
-int heavy_cal(int var) {
-#define LOOP 10
+/* global parameters for the test */
+static int n_pro = 1;
+static int n_con = 1;
+static int n_p_cal = 10; 
+static int n_c_cal = 10;
+
+int heavy_cal(int var, int n_loop) {
 	int i;
 
-	for(i=0; i<LOOP; i++) { 
+	for(i=0; i<n_loop; i++) { 
 		var = 1103515245 * var + 12345;
+		var = 0x4190001473/var;
 	}
 
 	return var;
 }
+
 
 void * pro_routin(void * arg) {
 	struct task * tsk = arg;
@@ -25,7 +32,7 @@ void * pro_routin(void * arg) {
 	srand((intptr_t)tsk->arg);
 
 	while(1) {
-		ret = heavy_cal(rand());
+		ret = heavy_cal(rand(), n_p_cal);
 		en_q(ret);
 		sleep(0);
 	}
@@ -36,7 +43,7 @@ void * con_routin(void * arg) {
 
 	ret = 0;
 	while(1) {
-		ret *= heavy_cal(de_q());
+		ret *= heavy_cal(de_q(), n_c_cal);
 		sleep(0);
 	}
 }
@@ -47,16 +54,37 @@ void int_handler(int signum) {
 	exit(signum);
 }
 
-int main(void) {
-	struct task *pro, *con;
+#define PARSE_ARG(i, arg) if(argc>(i)) arg = atoi(argv[i]);
+int main(int argc, char * argv[]) {
+	struct task **tasks;
+	int i;
+
+	PARSE_ARG(1, n_pro);
+	PARSE_ARG(2, n_con);
+	PARSE_ARG(3, n_p_cal);
+	PARSE_ARG(4, n_c_cal);
+
+	printf("cs n_pro=%d, n_con=%d, n_p_cal=%d, n_c_cal=%d\n",
+			n_pro, n_con, n_p_cal, n_c_cal);
+
+	if(n_pro<=0 || n_con<=0) {
+		printf("usage: cs [n_pro] [n_con] [n_p_cal] [n_c_cal]\n");
+		return EXIT_SUCCESS;
+	}
 
 	signal(SIGINT, int_handler);
 
-	pro = create_task(pro_routin, (void *)(intptr_t)rand());
-	con = create_task(con_routin, NULL);
+	tasks = (struct task **)malloc((n_pro+n_con) * sizeof(struct task *));
+	DIE_IF(!tasks, "malloc");
 
-	join_task(pro);
-	join_task(con);
+	for(i=0; i<n_pro; i++)
+		tasks[i] = create_task(pro_routin, (void *)(intptr_t)rand());
+
+	for(;i<n_pro+n_con;i++)
+		tasks[i] = create_task(con_routin, NULL);
+
+	for(i=0; i<n_pro+n_con; i++) 
+		join_task(tasks[i]);
 
 	return EXIT_SUCCESS;
 }
