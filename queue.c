@@ -3,6 +3,8 @@
 
 #include "misc.h"
 
+static long time1=0, time2=0;
+
 DEF_STAT_VAR(full_hit);
 DEF_STAT_VAR(empty_hit);
 DEF_STAT_VAR(enq);
@@ -12,8 +14,8 @@ DEF_STAT_MAX(qlen);
 #define QUEUE_SIZE 1000
 #define MOVE(var) var = (var+1)%QUEUE_SIZE
 
-int queue[QUEUE_SIZE];
-int head=0, tail=0;
+static int queue[QUEUE_SIZE];
+static int head=0, tail=0;
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -21,6 +23,9 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 void en_q(int data) {
 	int ret;
 	int qlen;
+
+	if(!time1)
+		time1 = get_timestamp();
 
 	ret = pthread_mutex_lock(&lock);
 	DIE_IF(ret, "lock");
@@ -71,9 +76,13 @@ int de_q(void) {
 }
 
 void print_q_stat(void) {
+	time2 = get_timestamp();
+
 	PRINT_STAT(full_hit);
 	PRINT_STAT(empty_hit);
 	PRINT_STAT(enq);
 	PRINT_STAT(deq);
 	PRINT_STAT_MAX(qlen);
+
+	printf("\t\thandle %ldK per second\n", stat_deq*1000L/(time2-time1));
 }
