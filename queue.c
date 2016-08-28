@@ -33,10 +33,6 @@ void en_q(int data) {
 
 	while((head+1)%QUEUE_SIZE == tail) {
 		STAT(full_hit);
-
-		ret = pthread_cond_signal(&condr);
-		DIE_IF(ret, "cond_signal");
-
 		pthread_cond_wait(&condw, &lock);
 	}
 
@@ -49,7 +45,8 @@ void en_q(int data) {
 		qlen+=QUEUE_SIZE;
 	STAT_MAX(qlen, qlen);
 
-
+	ret = pthread_cond_signal(&condr);
+	DIE_IF(ret, "cond_signal");
 
 	ret = pthread_mutex_unlock(&lock);
 	DIE_IF(ret, "unlock");
@@ -63,16 +60,16 @@ int de_q(void) {
 
 	while(head == tail) {
 		STAT(empty_hit);
-
-		ret = pthread_cond_signal(&condw);
-		DIE_IF(ret, "cond_signal");
-
 		pthread_cond_wait(&condr, &lock);
 	}
 
 	data = queue[tail];
 	MOVE(tail);
 	STAT(deq);
+
+	ret = pthread_cond_signal(&condw);
+	DIE_IF(ret, "cond_signal");
+
 
 	pthread_mutex_unlock(&lock);
 	DIE_IF(ret, "unlock");

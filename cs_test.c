@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <getopt.h>
 
 #include "misc.h"
 #include "task.h"
@@ -68,16 +69,33 @@ void int_handler(int signum) {
 	exit(signum);
 }
 
-#define PARSE_ARG(i, arg) if(argc>(i)) arg = atoi(argv[i]);
+#define PARSE_ARG(key, arg) case key: arg = atoi(optarg); break
+void parse_opt(int argc, char * argv[]) {
+	int opt;
+
+	while((opt=getopt(argc, argv, "p:c:P:C:y:")) != -1) {
+		switch(opt) {
+			PARSE_ARG('p', n_pro);
+			PARSE_ARG('c', n_con);
+			PARSE_ARG('P', n_con);
+			PARSE_ARG('C', n_con);
+			PARSE_ARG('y', n_con);
+			default:
+				fprintf(stderr, "usage: %s [-p n_pro] "
+						"[-c n_con] [-P n_p_cal] "
+						"[-C n_c_cal] "
+						"[-y yield_method]",
+						argv[0]);
+
+		}
+	}
+}
+
 int main(int argc, char * argv[]) {
 	struct task **tasks;
 	int i;
 
-	PARSE_ARG(1, n_pro);
-	PARSE_ARG(2, n_con);
-	PARSE_ARG(3, yield_method);
-	PARSE_ARG(4, n_p_cal);
-	PARSE_ARG(5, n_c_cal);
+	parse_opt(argc, argv);
 
 	printf("cs n_pro=%d, n_con=%d, n_p_cal=%d, n_c_cal=%d\n",
 			n_pro, n_con, n_p_cal, n_c_cal);
