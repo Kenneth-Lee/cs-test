@@ -2,11 +2,15 @@
 #define __MISC_H__
 #include <stdio.h>
 
+extern int cfg_set_marker;
+
 extern void DIE_check_func(char * f, int line, int cond, const char *fmt, ...);
 extern long get_timestamp(void);
+extern void get_timeout(struct timespec * ts, long timeout);
 extern void marker(const char *fmt, ...);
 
 #define DIE_IF(cond, fmt, ...) DIE_check_func(__FILE__, __LINE__, !!(cond), fmt, ##__VA_ARGS__)
+#define DIE(fmt, ...) DIE_IF(0, fmt, ...)
 
 #define DEF_STAT_VAR(var) static volatile sig_atomic_t stat_##var = 0
 #define STAT(var) stat_##var++
