@@ -59,8 +59,6 @@ void int_handler(int signum) {
 	exit(signum);
 }
 
-#define PARSE_ARG_I(key, arg) case key: arg = atoi(optarg); break
-#define PARSE_ARG(key, arg) case key: arg = 1; break
 void parse_opt(int argc, char * argv[]) {
 	int opt;
 

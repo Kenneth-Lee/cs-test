@@ -20,4 +20,7 @@ extern void marker(const char *fmt, ...);
 #define STAT_MAX(var, v) if(v > stat_max_##var) stat_max_##var=v
 #define PRINT_STAT_MAX(var) printf("\tstat_max_" #var ":\t\t%d\n", stat_max_##var)
 
+#define PARSE_ARG_I(key, arg) case key: arg = atoi(optarg); break
+#define PARSE_ARG(key, arg) case key: arg = 1; break
+
 #endif
