@@ -18,7 +18,8 @@ static int queue[QUEUE_SIZE];
 static int head=0, tail=0;
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t condr = PTHREAD_COND_INITIALIZER;
+pthread_cond_t condw = PTHREAD_COND_INITIALIZER;
 
 void en_q(int data) {
 	int ret;
@@ -32,7 +33,11 @@ void en_q(int data) {
 
 	while((head+1)%QUEUE_SIZE == tail) {
 		STAT(full_hit);
-		pthread_cond_wait(&cond, &lock);
+
+		ret = pthread_cond_signal(&condr);
+		DIE_IF(ret, "cond_signal");
+
+		pthread_cond_wait(&condw, &lock);
 	}
 
 	queue[head] = data;
@@ -44,8 +49,7 @@ void en_q(int data) {
 		qlen+=QUEUE_SIZE;
 	STAT_MAX(qlen, qlen);
 
-	ret = pthread_cond_signal(&cond);
-	DIE_IF(ret, "cond_signal");
+
 
 	ret = pthread_mutex_unlock(&lock);
 	DIE_IF(ret, "unlock");
@@ -59,15 +63,16 @@ int de_q(void) {
 
 	while(head == tail) {
 		STAT(empty_hit);
-		pthread_cond_wait(&cond, &lock);
+
+		ret = pthread_cond_signal(&condw);
+		DIE_IF(ret, "cond_signal");
+
+		pthread_cond_wait(&condr, &lock);
 	}
 
 	data = queue[tail];
 	MOVE(tail);
 	STAT(deq);
-
-	ret = pthread_cond_signal(&cond);
-	DIE_IF(ret, "cond_signal");
 
 	pthread_mutex_unlock(&lock);
 	DIE_IF(ret, "unlock");

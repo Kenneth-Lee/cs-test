@@ -47,6 +47,7 @@ void * pro_routin(void * arg) {
 	while(1) {
 		ret = heavy_cal(rand(), n_p_cal);
 		en_q(ret);
+		marker("yield here");
 		yield_method_f();
 	}
 }

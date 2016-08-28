@@ -4,6 +4,7 @@
 
 extern void DIE_check_func(char * f, int line, int cond, const char *fmt, ...);
 extern long get_timestamp(void);
+extern void marker(const char *fmt, ...);
 
 #define DIE_IF(cond, fmt, ...) DIE_check_func(__FILE__, __LINE__, !!(cond), fmt, ##__VA_ARGS__)
 

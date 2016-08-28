@@ -27,3 +27,16 @@ long get_timestamp(void) {
 
 	return t.tv_sec*1000000+t.tv_usec;
 }
+
+void marker(const char *fmt, ...) {
+        va_list args;
+	FILE *mf;
+
+	mf = fopen("/sys/kernel/debug/tracing/trace_marker", "w");
+
+        va_start(args, fmt);
+	vfprintf(mf, fmt, args);
+        va_end(args);
+
+	fclose(mf);
+}
