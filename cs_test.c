@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>
@@ -8,6 +7,7 @@
 #include "misc.h"
 #include "task.h"
 #include "queue.h"
+#include "cal.h"
 
 /* global parameters for the test */
 int cfg_n_pro = 1;
@@ -27,17 +27,6 @@ void ym1(void) {
 
 void ym2(void) {
 	sleep(0);
-}
-
-int heavy_cal(int var, int n_loop) {
-	int i;
-
-	for(i=0; i<n_loop; i++) { 
-		var = 1103515245 * var + 12345;
-		var = 0x4190001473/var;
-	}
-
-	return var;
 }
 
 void * pro_routin(void * arg) {
