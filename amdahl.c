@@ -7,28 +7,57 @@
 #include "misc.h"
 #include "task.h"
 #include "cal.h"
+#include "mcs_spinlock.h"
 
 int cfg_p = 99;
 int cfg_s = 1;
 int cfg_q = 4;
+int cfg_lock_type = 0;
+void (*spin_lock_m)(void*);
+void (*spin_unlock_m)(void*);
 
 static long time1=0, time2=0;
 
 static pthread_spinlock_t lock;
 
 struct sstat {
-	int count;
-	int latency;
+	long count;
+	long latencyp; /* latency on paralled task */
+	long latencys; /* latency on serial task */
 }*stat;
+#define STAT_LATENCY(i) (stat[i].latencyp+stat[i].latencys)
+#define STAT_LATENCY_AVE(i) (STAT_LATENCY(i)/stat[i].count)
+#define STAT_LATENCY_AVE_P(i) (stat[i].latencyp/stat[i].count)
+#define STAT_LATENCY_AVE_S(i) (stat[i].latencys/stat[i].count)
+
+void pthread_spin_lock_m(void *l) {
+	pthread_spin_lock(&lock);
+}
+
+void pthread_spin_unlock_m(void *l) {
+	pthread_spin_unlock(&lock);
+}
+
+void mcs_spin_lock_m(void *l) {
+	struct mcs_spinlock *ll = (struct mcs_spinlock *)l;
+	mcs_spin_lock(ll);
+}
+
+void mcs_spin_unlock_m(void *l) {
+	struct mcs_spinlock *ll = (struct mcs_spinlock *)l;
+	mcs_spin_unlock(ll);
+}
 
 void parse_opt(int argc, char * argv[]) {
 	int opt;
 
-	while((opt=getopt(argc, argv, "p:s:q:")) != -1) {
+	while((opt=getopt(argc, argv, "p:s:q:l:"MISC_OPT)) != -1) {
 		switch(opt) {
+			PARSE_MISC_OPT;
 			PARSE_ARG_I('p', cfg_p);
 			PARSE_ARG_I('s', cfg_s);
 			PARSE_ARG_I('q', cfg_q);
+			PARSE_ARG_I('l', cfg_lock_type);
 			default:
 				fprintf(stderr, "usage: %s [-p p] [-s s] [-q q]",
 						argv[0]);
@@ -41,35 +70,42 @@ void parse_opt(int argc, char * argv[]) {
 void * thread_routin(void * arg) {
 	struct task * tsk = arg;
 	int i = (int)(intptr_t)tsk->arg;
-	long time1, time2;
+	long time1;
+	struct mcs_spinlock ll;
 
 	while(1) {
 		time1 = get_timestamp();
 		heavy_cal(10, cfg_p);
-		pthread_spin_lock(&lock);
-		heavy_cal(20, cfg_s);
-		pthread_spin_unlock(&lock);
 		time2 = get_timestamp();
+		stat[i].latencyp += time2-time1;
+
+		spin_lock_m(&ll);
+		heavy_cal(20, cfg_s);
+		spin_unlock_m(&ll);
+		stat[i].latencys += get_timestamp() - time2;
 		stat[i].count++;
-		stat[i].latency +=time2-time1;
 	}
 }
 
 void int_handler(int signum) {
 	int i;
-	int sum=0;
-	int lsum=0;
+	long sum=0;
+	long lsum=0;
 
-	time2=get_timestamp();
-
-	printf("exit\nstat:\n");
+	verbose("exit\nstat:\n");
 	for(i=0; i<cfg_q; i++) {
 		DIE_IF(!stat[i].count, "no count");
-		printf("stat[%d]=%d,%d\n", i, stat[i].count, stat[i].latency/stat[i].count);
+		printf("stat[%d]=%ld(%ld,%ld)\n", i, 
+			STAT_LATENCY_AVE(i),
+			STAT_LATENCY_AVE_P(i),
+			STAT_LATENCY_AVE_S(i));
+		printf("stat[%d]=(%ld,%ld)\n", i, 
+			stat[i].latencyp,
+			stat[i].latencys);
 		sum+=stat[i].count;
-		lsum+=stat[i].latency;
+		lsum+=STAT_LATENCY(i);
 	}
-	printf("sum=%d, ave=%ldk/s, latency=%dms\n", sum, sum/((time2-time1)/1000), lsum/sum);
+	printf("sum=%ld, ave=%ldk/s, latency=%ldms\n", sum, sum/(lsum/1000), lsum/sum);
 
 	pthread_spin_destroy(&lock);
 
@@ -84,6 +120,15 @@ int main(int argc, char *argv[]) {
 	cfg_ncpu = get_ncpu();
 
 	parse_opt(argc, argv);
+
+	if(cfg_lock_type==1) {
+		spin_lock_m = mcs_spin_lock_m;
+		spin_unlock_m = mcs_spin_unlock_m;
+		mcs_spin_init();
+	}else {
+		spin_lock_m = pthread_spin_lock_m;
+		spin_unlock_m = pthread_spin_unlock_m;
+	}
 
 	printf("amdahl(p=%d, s=%d, q=%d)\n", cfg_p, cfg_s, cfg_q);
 

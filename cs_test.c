@@ -64,6 +64,7 @@ void parse_opt(int argc, char * argv[]) {
 
 	while((opt=getopt(argc, argv, "p:c:P:C:y:q:Q:m")) != -1) {
 		switch(opt) {
+			PARSE_MISC_OPT;
 			PARSE_ARG_I('p', cfg_n_pro);
 			PARSE_ARG_I('c', cfg_n_con);
 			PARSE_ARG_I('P', cfg_n_p_cal);
@@ -71,20 +72,22 @@ void parse_opt(int argc, char * argv[]) {
 			PARSE_ARG_I('y', cfg_yield_method);
 			PARSE_ARG_I('q', cfg_q_size);
 			PARSE_ARG_I('Q', cfg_q_timeout);
-			PARSE_ARG('m', cfg_set_marker);
 			default:
-				fprintf(stderr, "usage: %s [-p n_pro] "
+				p_error("usage: %s [-p n_pro] "
 						"[-c n_con] [-P n_p_cal] "
 						"[-C n_c_cal] "
 						"[-q queue_size] "
 						"[-Q queue_timeout] "
-						"[-m](set marker) "
 						"[-y yield_method]",
 						argv[0]);
 				exit(0);
 
 		}
 	}
+
+	verbose("cs: n_pro=%d, n_con=%d, n_p_cal=%d, n_c_cal=%d, q_size=%d, q_timeout=%d\n",
+			cfg_n_pro, cfg_n_con, cfg_n_p_cal, cfg_n_c_cal, cfg_q_size, cfg_q_timeout);
+
 }
 
 int main(int argc, char * argv[]) {
@@ -92,9 +95,6 @@ int main(int argc, char * argv[]) {
 	int i;
 
 	parse_opt(argc, argv);
-
-	printf("cs: n_pro=%d, n_con=%d, n_p_cal=%d, n_c_cal=%d, q_size=%d, q_timeout=%d\n",
-			cfg_n_pro, cfg_n_con, cfg_n_p_cal, cfg_n_c_cal, cfg_q_size, cfg_q_timeout);
 
 	init_q();
 

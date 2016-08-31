@@ -5,12 +5,13 @@
 #include "misc.h"
 
 int cfg_set_marker = 0;
+int cfg_brief = 0;
 
 void DIE_check_func(char * f, int line, int cond, const char *fmt, ...) {
         va_list args;
 
         va_start(args, fmt);
-        if(cond) {
+        if(unlikely(cond)) {
                 printf("DIE at %s:%i: ", f, line);
                 vprintf(fmt, args);
                 printf("\n");
