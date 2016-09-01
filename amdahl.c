@@ -16,7 +16,7 @@ int cfg_lock_type = 0;
 void (*spin_lock_m)(void*);
 void (*spin_unlock_m)(void*);
 
-static long time1=0, time2=0;
+static long time_begin=0;
 
 static pthread_spinlock_t lock;
 
@@ -70,7 +70,7 @@ void parse_opt(int argc, char * argv[]) {
 void * thread_routin(void * arg) {
 	struct task * tsk = arg;
 	int i = (int)(intptr_t)tsk->arg;
-	long time1;
+	long time1, time2;
 	struct mcs_spinlock ll;
 
 	while(1) {
@@ -82,6 +82,7 @@ void * thread_routin(void * arg) {
 		spin_lock_m(&ll);
 		heavy_cal(20, cfg_s);
 		spin_unlock_m(&ll);
+
 		stat[i].latencys += get_timestamp() - time2;
 		stat[i].count++;
 	}
@@ -91,21 +92,19 @@ void int_handler(int signum) {
 	int i;
 	long sum=0;
 	long lsum=0;
+	long all_time = (get_timestamp() - time_begin)/1000;
 
 	verbose("exit\nstat:\n");
 	for(i=0; i<cfg_q; i++) {
 		DIE_IF(!stat[i].count, "no count");
-		printf("stat[%d]=%ld(%ld,%ld)\n", i, 
+		verbose("stat[%d]=%ld(%ld,%ld)\n", i, 
 			STAT_LATENCY_AVE(i),
 			STAT_LATENCY_AVE_P(i),
 			STAT_LATENCY_AVE_S(i));
-		printf("stat[%d]=(%ld,%ld)\n", i, 
-			stat[i].latencyp,
-			stat[i].latencys);
 		sum+=stat[i].count;
 		lsum+=STAT_LATENCY(i);
 	}
-	printf("sum=%ld, ave=%ldk/s, latency=%ldms\n", sum, sum/(lsum/1000), lsum/sum);
+	printf("sum=%ld, ave=%ldk/s, latency=%ldms\n", sum, sum/all_time, lsum/sum);
 
 	pthread_spin_destroy(&lock);
 
@@ -130,7 +129,7 @@ int main(int argc, char *argv[]) {
 		spin_unlock_m = pthread_spin_unlock_m;
 	}
 
-	printf("amdahl(p=%d, s=%d, q=%d)\n", cfg_p, cfg_s, cfg_q);
+	verbose("amdahl(p=%d, s=%d, q=%d)\n", cfg_p, cfg_s, cfg_q);
 
 	DIE_IF(cfg_q>cfg_ncpu, "q(%d)>cpus(%d)\n", cfg_q, cfg_ncpu);
 
@@ -145,7 +144,7 @@ int main(int argc, char *argv[]) {
 
 	signal(SIGINT, int_handler);
 
-	time1 = get_timestamp();
+	time_begin = get_timestamp();
 	for(i=0; i<cfg_q; i++)
 		tasks[i] = create_task_on_cpu(thread_routin, (void *)(intptr_t)i, i);
 	for(i=0; i<cfg_q; i++)
