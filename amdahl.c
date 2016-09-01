@@ -104,7 +104,11 @@ void int_handler(int signum) {
 		sum+=stat[i].count;
 		lsum+=STAT_LATENCY(i);
 	}
-	printf("sum=%ld, ave=%ldk/s, latency=%ldms\n", sum, sum/all_time, lsum/sum);
+	if(cfg_brief) {
+		printf("%ld, %ld\n", sum/all_time, lsum/sum);
+	}else {
+		printf("sum=%ld, ave=%ldk/s, latency=%ldms\n", sum, sum/all_time, lsum/sum);
+	}
 
 	pthread_spin_destroy(&lock);
 
