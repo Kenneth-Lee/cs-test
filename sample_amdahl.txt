@@ -1,4 +1,7 @@
+model name	: Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
+
 batch test: 72 CPU on 3 seconds for one
+
 999:1
 use pthread_spinlock
 8, 120

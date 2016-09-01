@@ -19,6 +19,7 @@ void (*spin_unlock_m)(void*);
 static long time_begin=0;
 
 static pthread_spinlock_t lock;
+static struct mcs_baselock mcslock;
 
 struct sstat {
 	long count;
@@ -40,12 +41,12 @@ void pthread_spin_unlock_m(void *l) {
 
 void mcs_spin_lock_m(void *l) {
 	struct mcs_spinlock *ll = (struct mcs_spinlock *)l;
-	mcs_spin_lock(ll);
+	mcs_spin_lock(&mcslock, ll);
 }
 
 void mcs_spin_unlock_m(void *l) {
 	struct mcs_spinlock *ll = (struct mcs_spinlock *)l;
-	mcs_spin_unlock(ll);
+	mcs_spin_unlock(&mcslock, ll);
 }
 
 void parse_opt(int argc, char * argv[]) {
@@ -127,7 +128,7 @@ int main(int argc, char *argv[]) {
 	if(cfg_lock_type==1) {
 		spin_lock_m = mcs_spin_lock_m;
 		spin_unlock_m = mcs_spin_unlock_m;
-		mcs_spin_init();
+		mcs_spin_init(&mcslock);
 	}else {
 		spin_lock_m = pthread_spin_lock_m;
 		spin_unlock_m = pthread_spin_unlock_m;

@@ -8,8 +8,13 @@ struct mcs_spinlock {
 	volatile int locked; /* 1 if lock acquired */
 }; 
 
-extern void mcs_spin_init(void);
-extern void mcs_spin_lock(struct mcs_spinlock *node);
-extern void mcs_spin_unlock(struct mcs_spinlock *node);
+struct mcs_baselock {
+	struct mcs_spinlock *pbase;
+	pthread_spinlock_t plock;
+};
+
+extern void mcs_spin_init(struct mcs_baselock *lock);
+extern void mcs_spin_lock(struct mcs_baselock *lock, struct mcs_spinlock *node);
+extern void mcs_spin_unlock(struct mcs_baselock *lock, struct mcs_spinlock *node);
 
 #endif
