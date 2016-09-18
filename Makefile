@@ -29,7 +29,7 @@ clean:
 
 cleanall:
 	rm -f *.o $(ALL) tags cscope.out core
-	sudo rm -f perf perf.data
+	sudo rm -f perf perf.data perf.data.old
 
 tags:
 	ctags -R --extra=f
