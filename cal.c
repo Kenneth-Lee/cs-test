@@ -56,7 +56,7 @@ int heavy_mem_write(int npage) {
 void random_malloc_free(int max_size, int fill_num) {
 	int *p;
 	int i;
-	size_t size = rand() % (max_size*1024);
+	size_t size = rand() % (max_size);
 	if(size==0)
 		size = 1;
 

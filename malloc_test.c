@@ -10,9 +10,10 @@
 #include "misc.h"
 #include "task.h"
 
-int cfg_size=1024*1024;  /* in KB */
-int cfg_fill_num=100;    /* in pages */
+int cfg_size=1024*1024;
+int cfg_fill_num=1000;
 int cfg_thread_num=4;
+int cfg_cal_load=100;
 
 static long time1=0, time2=0;
 DEF_STAT_VAR(run);
@@ -29,13 +30,14 @@ void int_handler(int signum) {
 void parse_opt(int argc, char * argv[]) {
 	int opt;
 
-	while((opt=getopt(argc, argv, "s:n:q:")) != -1) {
+	while((opt=getopt(argc, argv, "s:n:q:c:")) != -1) {
 		switch(opt) {
 			PARSE_ARG_I('s', cfg_size);
 			PARSE_ARG_I('n', cfg_fill_num);
 			PARSE_ARG_I('q', cfg_thread_num);
+			PARSE_ARG_I('c', cfg_cal_load);
 			default:
-				fprintf(stderr, "usage: %s [-s size (kb)] [-n fill_num] [-q thread_num]",
+				fprintf(stderr, "usage: %s [-s size (kb)] [-n fill_num] [-q thread_num] [-c cal_load]",
 						argv[0]);
 				exit(0);
 
@@ -46,6 +48,7 @@ void parse_opt(int argc, char * argv[]) {
 void * thread_routin(void * arg) {
 	while(1) {
 		random_malloc_free(cfg_size, cfg_fill_num);
+		heavy_cal(10, cfg_cal_load);
 		STAT(run);
 	}
 }
@@ -67,7 +70,7 @@ int main(int argc, char *argv[]) {
 	time1 = get_timestamp();
 
 	for(i=0; i<cfg_thread_num; i++)
-		ts->tasks[i] = create_task_on_cpu(thread_routin, (void *)(intptr_t)i, i);
+		ts->tasks[i] = create_task_on_cpu(thread_routin, NULL, i);
 
 	join_task_set(ts);
 
