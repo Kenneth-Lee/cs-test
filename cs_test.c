@@ -1,3 +1,8 @@
+/**
+ * Copyright by Kenneth Lee 2016
+ *
+ * a providers-consumers model on a queue
+ */
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>

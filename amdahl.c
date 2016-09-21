@@ -1,3 +1,10 @@
+/**
+ * Copyright by Kenneth Lee 2016
+ *
+ * a amdahl model with parallel part and serial part for every calculation. the
+ * serial part is protected by spin_lock so the model will come up to be a
+ * Makov queue model */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>

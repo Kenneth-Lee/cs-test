@@ -1,4 +1,8 @@
-/* a simple mcs lock in user space, support only one lock */
+/**
+ * Copyright by Kenneth Lee 2016
+ *
+ * a simple mcs lock in user space, support only one lock
+ */
 
 #ifndef __MCS_SPINLOCK_H__
 #define __MCS_SPINLOCK_H__

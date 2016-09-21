@@ -1,3 +1,6 @@
+/**
+ * Copyright by Kenneth Lee 2016
+ */
 #ifndef __CAL_H__
 #define __CAL_H__
 

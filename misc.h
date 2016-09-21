@@ -1,3 +1,6 @@
+/**
+ * Copyright by Kenneth Lee 2016
+ */
 #ifndef __MISC_H__
 #define __MISC_H__
 #include <stdio.h>

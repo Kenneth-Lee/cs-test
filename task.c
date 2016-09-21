@@ -1,3 +1,6 @@
+/**
+ * Copyright by Kenneth Lee 2016
+ */
 #include <pthread.h>
 #include <stdlib.h>
 #include <sched.h>

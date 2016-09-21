@@ -1,3 +1,6 @@
+/**
+ * Copyright by Kenneth Lee 2016
+ */
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>

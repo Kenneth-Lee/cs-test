@@ -1,3 +1,7 @@
+/**
+ * Copyright by Kenneth Lee 2016
+ */
+
 #include <stdlib.h>
 #include "cal.h"
 
