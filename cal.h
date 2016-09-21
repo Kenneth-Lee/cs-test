@@ -9,5 +9,6 @@
 extern int heavy_cal(int var, int n_loop);
 extern int heavy_mem_read(int npage);
 extern int heavy_mem_write(int npage);
+extern void random_malloc_free(int max_size, int fill_num);
 
 #endif

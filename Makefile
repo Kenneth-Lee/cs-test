@@ -1,8 +1,11 @@
-ALL=cs amdahl ci
+ALL=cs amdahl ci malloc_test
 
 all: $(ALL)
 
 cs: cs_test.o task.o misc.o queue.o cal.o
+	$(CC) $^ -g -lpthread -o $@
+
+malloc_test: malloc_test.o task.o misc.o cal.o
 	$(CC) $^ -g -lpthread -o $@
 
 amdahl: amdahl.o task.o misc.o cal.o mcs_spinlock.o
@@ -16,6 +19,7 @@ task.o: task.c task.h misc.h
 misc.o: misc.c misc.h
 cal.o: cal.c
 amdahl.o: amdahl.c misc.h task.h mcs_spinlock.h
+malloc_test.o: malloc_test.c misc.h task.h
 ci.o: ci.c misc.h cal.h
 mcs_spinlock.o: mcs_spinlock.c mcs_spinlock.h
 

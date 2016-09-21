@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
 	parse_opt(argc, argv);
 	DIE_IF(!cfg_unit, "cfg_unit");
-	DIE_IF(!cfg_size, "cfg_unit");
+	DIE_IF(!cfg_size, "cfg_size");
 
 
 	signal(SIGINT, int_handler);

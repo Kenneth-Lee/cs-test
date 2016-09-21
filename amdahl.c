@@ -67,7 +67,7 @@ void parse_opt(int argc, char * argv[]) {
 			PARSE_ARG_I('q', cfg_q);
 			PARSE_ARG_I('l', cfg_lock_type);
 			default:
-				fprintf(stderr, "usage: %s [-p p] [-s s] [-q q]",
+				fprintf(stderr, "usage: %s [-p p] [-s s] [-q q] [-l lock_type]",
 						argv[0]);
 				exit(0);
 
@@ -124,9 +124,9 @@ void int_handler(int signum) {
 }
 
 int main(int argc, char *argv[]) {
-	struct task **tasks;
 	int i;
 	int ret;
+	struct task_set * ts;
 
 	cfg_ncpu = get_ncpu();
 
@@ -145,8 +145,7 @@ int main(int argc, char *argv[]) {
 
 	DIE_IF(cfg_q>cfg_ncpu, "q(%d)>cpus(%d)\n", cfg_q, cfg_ncpu);
 
-	tasks = (struct task **)malloc(cfg_q * sizeof(struct task *));
-	DIE_IF(!tasks, "malloc");
+	ts = create_task_set(cfg_q);
 
 	ret = pthread_spin_init(&lock, PTHREAD_PROCESS_PRIVATE);
 	DIE_IF(ret, "spin_init");
@@ -158,9 +157,9 @@ int main(int argc, char *argv[]) {
 
 	time_begin = get_timestamp();
 	for(i=0; i<cfg_q; i++)
-		tasks[i] = create_task_on_cpu(thread_routin, (void *)(intptr_t)i, i);
-	for(i=0; i<cfg_q; i++)
-		join_task(tasks[i]);
+		ts->tasks[i] = create_task_on_cpu(thread_routin, (void *)(intptr_t)i, i);
+
+	join_task_set(ts);
 
 	free(stat);
 

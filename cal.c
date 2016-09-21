@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include "cal.h"
+#include "misc.h"
 
 int heavy_cal(int var, int n_loop) {
 	int i;
@@ -50,4 +51,20 @@ int heavy_mem_write(int npage) {
 	free(data);
 
 	return 0;
+}
+
+void random_malloc_free(int max_size, int fill_num) {
+	int *p;
+	int i;
+	size_t size = rand() % (max_size*1024);
+	if(size==0)
+		size = 1;
+
+
+	p = (int *)malloc(size*sizeof(int));
+	DIE_IF(!p, "malloc");
+	for(i=0; i<fill_num; i++) {
+		p[rand()%size] = rand();
+	}
+	free(p);
 }

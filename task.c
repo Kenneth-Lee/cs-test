@@ -48,3 +48,22 @@ void join_task(struct task * tsk) {
 	pthread_attr_destroy(&tsk->attr);
 	free(tsk);
 }
+
+struct task_set * create_task_set(int num) {
+	struct task_set * ts = malloc(sizeof(struct task_set));
+	DIE_IF(!ts, "malloc");
+	ts->num = num;
+	ts->tasks = (struct task **)malloc(num * sizeof(struct task *));
+	DIE_IF(!ts->tasks, "malloc");
+
+	return ts;
+}
+
+void join_task_set(struct task_set *ts) {
+	int i;
+
+	for(i=0; i<ts->num; i++)
+		join_task(ts->tasks[i]);
+
+	free(ts);
+}
