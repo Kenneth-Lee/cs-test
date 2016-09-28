@@ -63,9 +63,13 @@ void marker(const char *fmt, ...) {
 }
 
 int mrand(void) {
+#ifdef USE_SYS_RAND
+	return rand();
+#else
 	int next = random_seed*1103515245+12345;
 	random_seed=next;
-	return next/65536%32768;
+	return (unsigned int)next/65536%32768;
+#endif
 }
 
 void init_rand(void) {
