@@ -12,6 +12,9 @@ extern void DIE_check_func(char * f, int line, int cond, const char *fmt, ...);
 extern long get_timestamp(void);
 extern void get_timeout(struct timespec * ts, long timeout);
 extern void marker(const char *fmt, ...);
+extern int mrand(void);
+extern void init_rand(void);
+
 
 #define DIE_IF(cond, fmt, ...) DIE_check_func(__FILE__, __LINE__, !!(cond), fmt, ##__VA_ARGS__)
 #define DIE(fmt, ...) DIE_IF(0, fmt, ...)

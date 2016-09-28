@@ -10,6 +10,8 @@
 int cfg_set_marker = 0;
 int cfg_brief = 0;
 
+static int random_seed=0;
+
 void DIE_check_func(char * f, int line, int cond, const char *fmt, ...) {
         va_list args;
 
@@ -58,4 +60,14 @@ void marker(const char *fmt, ...) {
         va_end(args);
 
 	fclose(mf);
+}
+
+int mrand(void) {
+	int next = random_seed*1103515245+12345;
+	random_seed=next;
+	return next/65536%32768;
+}
+
+void init_rand(void) {
+	random_seed = get_timestamp();
 }

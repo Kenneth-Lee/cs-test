@@ -46,6 +46,7 @@ void parse_opt(int argc, char * argv[]) {
 }
 
 void * thread_routin(void * arg) {
+	init_rand();
 	while(1) {
 		random_malloc_free(cfg_size, cfg_fill_num);
 		heavy_cal(10, cfg_cal_load);
