@@ -38,3 +38,6 @@ cleanall:
 tags:
 	ctags -R --extra=f
 	cscope -Rb
+
+test:
+	./batch_test.sh
