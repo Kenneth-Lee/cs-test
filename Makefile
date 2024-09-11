@@ -1,4 +1,4 @@
-ALL=cs amdahl ci malloc_test
+ALL=cs amdahl ci malloc_test ctx_switch
 
 all: $(ALL)
 
@@ -13,6 +13,9 @@ amdahl: amdahl.o task.o misc.o cal.o mcs_spinlock.o
 
 ci: ci.o misc.o cal.o
 	$(CC) $^ -g -o $@
+
+ctx_switch: ctx_switch.o
+	$(CC) $^ -o $@
 
 cs_test.o: cs_test.c misc.h task.h queue.h cal.h
 task.o: task.c task.h misc.h

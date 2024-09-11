@@ -27,7 +27,7 @@ void ym0(void) {
 }
 
 void ym1(void) {
-	pthread_yield();
+	sched_yield();
 }
 
 void ym2(void) {

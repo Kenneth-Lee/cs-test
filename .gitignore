@@ -2,3 +2,10 @@
 cs
 perf.data
 perf.data.old
+tags
+cscope.out
+core
+amdahl
+ci
+malloc_test
+ctx_switch
