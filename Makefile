@@ -14,7 +14,7 @@ amdahl: amdahl.o task.o misc.o cal.o mcs_spinlock.o
 ci: ci.o misc.o cal.o
 	$(CC) $^ -g -o $@
 
-ctx_switch: ctx_switch.o
+ctx_switch: ctx_switch.o misc.o
 	$(CC) $^ -o $@
 
 cs_test.o: cs_test.c misc.h task.h queue.h cal.h
@@ -25,6 +25,7 @@ amdahl.o: amdahl.c misc.h task.h mcs_spinlock.h
 malloc_test.o: malloc_test.c misc.h task.h
 ci.o: ci.c misc.h cal.h
 mcs_spinlock.o: mcs_spinlock.c mcs_spinlock.h
+ctx_switch.o: ctx_switch.c misc.h
 
 %.o: %.c
 	$(CC) -c -g -Wall -D_GNU_SOURCE $< -o $@
