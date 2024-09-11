@@ -1,4 +1,5 @@
 *.o
+*.swp
 cs
 perf.data
 perf.data.old
@@ -9,3 +10,4 @@ amdahl
 ci
 malloc_test
 ctx_switch
+*result
