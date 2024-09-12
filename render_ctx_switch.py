@@ -3,43 +3,42 @@
 import sys
 import re
 import matplotlib.pyplot as plt
+import numpy as np
 
 num="([1234567890.,]+)"
 re_cpu_core=re.compile(num+".*cpu_core")
 re_time_elapsed=re.compile(num+".*time elapsed")
 
-def match_line(a, rec, line):
+def match_line(line, rec):
     data = rec.findall(line)
     if data and len(data)==1:
         d = float(data[0].replace(',', ''))
-        a.append(d)
-        return True
-    return False
+        return d
+    return None
 
 def render_one_result(ax, fn):
-    core_counter=[]
-    time_counter=[]
-    ave_core_counter=[]
-    x=[]
+    core_counter=np.array([], dtype=float)
+    time_counter=np.array([], dtype=float)
 
     with open(fn) as f:
         lines=f.readlines()
 
     for line in lines:
-        if match_line(core_counter, re_cpu_core, line):
+        d = match_line(line, re_cpu_core)
+        if d:
+            core_counter = np.append(core_counter, d)
             continue
-        else:
-            match_line(time_counter, re_time_elapsed, line)
+        d = match_line(line, re_time_elapsed)
+        if d:
+            time_counter = np.append(time_counter, d)
+            continue
 
-    if len(core_counter) != len(time_counter):
-        print(f"format error, core/time counter is {core_counter}/{time_counter}")
+    length = np.size(core_counter)
+    if length != np.size(time_counter):
+        print(f"format error, core/time counter is {length}/{np.size(time_counter)}")
         sys.exit(-1)
 
-    for i in range(len(core_counter)):
-        ave_core_counter.append(core_counter[i]/time_counter[i]) # assume no zero in time_counter
-        x.append(i+2)
-
-    l = ax.plot(x, ave_core_counter, label=fn)
+    l = ax.plot(np.arange(2, 2+length), core_counter/time_counter, label=fn)
     return l
 
 fig, ax=plt.subplots()
