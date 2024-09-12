@@ -38,17 +38,14 @@ def render_one_result(ax, fn):
         print(f"format error, core/time counter is {length}/{np.size(time_counter)}")
         sys.exit(-1)
 
-    l = ax.plot(np.arange(2, 2+length), core_counter/time_counter, label=fn)
-    return l
+    ax.plot(np.arange(2, 2+length), core_counter/time_counter, label=fn)
 
 fig, ax=plt.subplots()
 ax.set(xlabel="num_process", ylabel="ave itlb misses", title="tlbmiss with switch process number")
 ax.grid()
 
-ls = []
 for fn in sys.argv[1:]:
-    l = render_one_result(ax, fn)
-    ls.append(l)
+    render_one_result(ax, fn)
 
 fig.legend()
 plt.show()
