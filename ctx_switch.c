@@ -1,7 +1,8 @@
 /**
  * Copyright by Kenneth Lee, 2024. All Rights Reserved.
  * 
- * 这个程序创建一组进程，测试他们上下文切换会产生的成本（用perf测试），原理如下：
+ * 这个程序创建一组进程，测试他们上下文切换会产生的成本（用perf运行本程序的
+ * WorkLoad测试），原理如下：
  *
  * 启动一个进程，先绑定CPU（绑定CPU会继承），然后创建一个同步pipe，创建一个子进
  * 程，子进程再创建一个同步pipe，创建下一个子进程，如此类推，最后一个子进程再和
@@ -17,9 +18,6 @@
 #include <sys/wait.h>
 #include <sched.h>
 #include "misc.h"
-
-#define NUM_PROCESSES 3
-#define LOOP_COUNT 1000
 
 #define LOOP_UNIT 1024
 static int cfg_loop = 10;
@@ -144,11 +142,11 @@ int main(int argc, char *argv[]) {
 	children = (struct child_struc *)calloc(cfg_num, sizeof(*children));
 	DIE_IF(!children, "calloc");
 
-	// 创建最后一个进程的pipe，以便可以loop回进程上
+	// 创建最后一个进程的pipe，以便可以loop回主进程上
 	ret = pipe2(children[cfg_num-1].pipefd, O_DIRECT);
 	DIE_IF(ret < 0, "pipe init");
 	print("create pipe pair for task %d: %d, %d\n", cfg_num-1,
-	      children[NUM_PROCESSES-1].pipefd[0],children[cfg_num-1].pipefd[1]);
+	      children[cfg_num-1].pipefd[0], children[cfg_num-1].pipefd[1]);
 
 	work();
 
