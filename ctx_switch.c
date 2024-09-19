@@ -24,6 +24,7 @@ static int cfg_loop = 10;
 static int cfg_cpu = 2; 		// 默认避开主核和主核的超线程
 static int cfg_max = 1000;              // 切换次数到达结束，0表示永远循环
 static int cfg_num = 3;                 // 默认切换进程数量。
+static int cfg_num_ipage = 0;           // jump number of code page in every switch
 
 void child_logic(int id);
 
@@ -34,6 +35,31 @@ struct child_struc {
 int current_p = 0;            // 当前初始化的进程，0是主进程。
 //#define print(fmt, ...) printf("%d: " fmt, current_p, ##__VA_ARGS__)
 #define print(fmt, ...)
+
+static __attribute__((optimize("O0"))) void workload()  {
+	int c = cfg_num_ipage;
+	for (int i = 0; i < cfg_loop*LOOP_UNIT; i++) ;
+#if __x86_64
+#define MAX_NUM_IPAGE 100
+#define stringize(s) _stringize(s)
+#define _stringize(s) #s
+	asm volatile (
+		".rept " stringize(MAX_NUM_IPAGE) "\n"
+		"test %0, %0\n"
+		"jnz 1f\n"
+		"jmp end\n"
+		".rept 2*1024*1024\n"
+		".byte 1\n"
+		".endr\n"
+		"1:dec %0\n"
+		".endr\n"
+		"end:\n"
+		::"r"(c));
+#else
+#warning "num_ipage not support"
+#define MAX_NUM_IPAGE 0
+#endif
+}
 
 // 主工作循环：等待通讯，循环，激活下一级
 void workloop(int wfd, int rfd) {
@@ -47,7 +73,7 @@ void workloop(int wfd, int rfd) {
 		DIE_IF(ret <= 0, "read");
 		print("read %s\n", buf);
 
-		for (int i = 0; i < cfg_loop*LOOP_UNIT; i++) ;
+		workload();
 
 		print("kick next fd=%d\n", wfd);
 		ret = write(wfd, "go", 3);
@@ -105,17 +131,18 @@ void work() {
 void parse_opt(int argc, char * argv[]) {
 	int opt;
 
-	while((opt=getopt(argc, argv, "l:c:M:n:" MISC_OPT)) != -1) {
+	while((opt=getopt(argc, argv, "l:c:M:n:i:" MISC_OPT)) != -1) {
 		switch(opt) {
 			PARSE_MISC_OPT;
 			PARSE_ARG_I('l', cfg_loop);
 			PARSE_ARG_I('c', cfg_cpu);
 			PARSE_ARG_I('M', cfg_max);
 			PARSE_ARG_I('n', cfg_num);
+			PARSE_ARG_I('i', cfg_num_ipage);
 			default:
 				fprintf(stderr,
 					"usage: %s [-l loop] [-c bound_cpu] [-M max_switch]"
-					" [-n process_num]\n",
+					" [-n process_num] [-i num_ipage]\n",
 					argv[0]);
 				exit(EXIT_SUCCESS);
 		}
@@ -132,6 +159,12 @@ int main(int argc, char *argv[]) {
 
 	if (cfg_num < 2) {
 		fprintf(stderr, "must assign at lease 2 threads (now %d)\n", cfg_num);
+		exit(EXIT_SUCCESS);
+	}
+
+	if (cfg_num_ipage > MAX_NUM_IPAGE) {
+		fprintf(stderr, "cfg_num_ipage(%d) is greater than MAX_NUM_IPAGE(%d)\n",
+			cfg_num_ipage, MAX_NUM_IPAGE);
 		exit(EXIT_SUCCESS);
 	}
 
