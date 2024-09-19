@@ -37,24 +37,42 @@ int current_p = 0;            // 当前初始化的进程，0是主进程。
 #define print(fmt, ...)
 
 static __attribute__((optimize("O0"))) void workload()  {
-	int c = cfg_num_ipage;
 	for (int i = 0; i < cfg_loop*LOOP_UNIT; i++) ;
-#if __x86_64
+
 #define MAX_NUM_IPAGE 100
 #define stringize(s) _stringize(s)
 #define _stringize(s) #s
+#if __x86_64
+	int c = cfg_num_ipage;
 	asm volatile (
 		".rept " stringize(MAX_NUM_IPAGE) "\n"
 		"test %0, %0\n"
 		"jnz 1f\n"
 		"jmp end\n"
-		".rept 2*1024*1024\n"
+		".rept 4096\n"
 		".byte 1\n"
 		".endr\n"
 		"1:dec %0\n"
 		".endr\n"
 		"end:\n"
 		::"r"(c));
+#elif __AARCH64EL
+	int c = cfg_num_ipage;
+	unsigned long addr = 0;
+	asm volatile (
+		".rept " stringize(MAX_NUM_IPAGE) "\n"
+		"cmp %1, 0\n"
+		"b.eq 2f\n"
+		"b 3f\n"
+		"2:b end\n"
+		"b 1f\n"
+		".rept 4096\n"
+		".byte 1\n"
+		".endr\n"
+		"1:sub %1, %1, #1\n"
+		".endr\n"
+		"end:\n"
+		:"=r"(addr):"r"(c));
 #else
 #warning "num_ipage not support"
 #define MAX_NUM_IPAGE 0
